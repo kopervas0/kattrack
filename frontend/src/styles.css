@@ -1,0 +1,149 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: #f5f6fa;
+  color: #1c1e21;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e4e9;
+}
+
+.dashboard {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.stats-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stats-bar button {
+  border: 1px solid #d7d9e0;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.stats-bar button.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.add-button {
+  margin: 0 1.5rem 1rem;
+  padding: 0.6rem 1rem;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.application-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.application-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-left: 4px solid #94a3b8;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.application-card.status-applied { border-left-color: #64748b; }
+.application-card.status-interview { border-left-color: #f59e0b; }
+.application-card.status-offer { border-left-color: #16a34a; }
+.application-card.status-rejected { border-left-color: #dc2626; }
+
+.application-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.badge {
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.application-form,
+.auth-page form {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.application-form label,
+.auth-page label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.salary-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.auth-page {
+  max-width: 360px;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+}
