@@ -39,7 +39,7 @@ export class ApplicationRepository {
     const { rows } = await pool.query(
       `INSERT INTO applications
          (user_id, company, position, url, status, salary_from, salary_to, notes, applied_at)
-       VALUES ($1, $2, $3, $4, COALESCE($5, 'applied'), $6, $7, $8, COALESCE($9, CURRENT_DATE))
+       VALUES ($1, $2, $3, $4, COALESCE($5::application_status, 'applied'), $6, $7, $8, COALESCE($9, CURRENT_DATE))
        RETURNING ${SELECT_COLUMNS}`,
       [
         userId,
@@ -94,11 +94,20 @@ export class ApplicationRepository {
     return (rowCount ?? 0) > 0;
   }
 
-  async countByStatus(userId: number): Promise<Record<ApplicationStatus, number>> {
+  async countByUser(userId: number): Promise<number> {
+    const { rows } = await pool.query(
+      `SELECT COUNT(*)::int AS count FROM applications WHERE user_id = $1`,
+      [userId],
+    );
+    return rows[0].count;
+  }
+
+  // System-wide counts for the admin panel (userId = null means "all users").
+  async countByStatus(userId: number | null): Promise<Record<ApplicationStatus, number>> {
     const { rows } = await pool.query(
       `SELECT status, COUNT(*)::int AS count
        FROM applications
-       WHERE user_id = $1
+       WHERE $1::int IS NULL OR user_id = $1
        GROUP BY status`,
       [userId],
     );

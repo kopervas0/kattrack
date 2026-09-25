@@ -1,10 +1,11 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
-import { authApi, setAuthToken, getAuthToken } from '../api/client';
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import { ApiError, authApi, setAuthToken, getAuthToken } from '../api/client';
 import { PublicUser } from '../types';
 
 interface AuthContextValue {
   user: PublicUser | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -40,9 +41,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  // On page load, re-fetch the user: an admin may have changed the role or blocked the account
+  // since the data was saved to localStorage.
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) return;
+    authApi
+      .me()
+      .then(({ user: fresh }) => persist(fresh, token))
+      .catch((err) => {
+        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+          logout();
+        }
+      });
+  }, [persist, logout]);
+
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: Boolean(user && getAuthToken()), login, register, logout }}
+      value={{
+        user,
+        isAuthenticated: Boolean(user && getAuthToken()),
+        isAdmin: user?.role === 'admin',
+        login,
+        register,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

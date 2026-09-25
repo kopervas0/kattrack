@@ -1,6 +1,7 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { settingsApi } from '../api/client';
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -9,6 +10,14 @@ export function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [registrationEnabled, setRegistrationEnabled] = useState(true);
+
+  useEffect(() => {
+    settingsApi
+      .getPublic()
+      .then(({ settings }) => setRegistrationEnabled(settings.registrationEnabled))
+      .catch(() => undefined);
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -27,6 +36,9 @@ export function RegisterPage() {
   return (
     <div className="auth-page">
       <h1>Регистрация в KatTrack</h1>
+      {!registrationEnabled && (
+        <p className="error">Регистрация новых пользователей временно отключена администратором.</p>
+      )}
       <form onSubmit={handleSubmit}>
         <label>
           Email
@@ -43,7 +55,7 @@ export function RegisterPage() {
           />
         </label>
         {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={submitting}>
+        <button type="submit" disabled={submitting || !registrationEnabled}>
           {submitting ? 'Создаём аккаунт…' : 'Зарегистрироваться'}
         </button>
       </form>

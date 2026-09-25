@@ -1,8 +1,32 @@
 export type ApplicationStatus = 'applied' | 'interview' | 'offer' | 'rejected';
 
+export type UserRole = 'user' | 'admin';
+
 export interface PublicUser {
   id: number;
   email: string;
+  role: UserRole;
+}
+
+export interface AdminUserView {
+  id: number;
+  email: string;
+  role: UserRole;
+  isBlocked: boolean;
+  createdAt: string;
+  applicationsCount: number;
+}
+
+export interface AppSettings {
+  registrationEnabled: boolean;
+  // 0 means "no limit"
+  maxApplicationsPerUser: number;
+  announcement: string;
+}
+
+export interface SystemStats {
+  users: { total: number; admins: number; blocked: number; newLast7Days: number };
+  applications: { total: number; byStatus: Record<ApplicationStatus, number> };
 }
 
 export interface Application {

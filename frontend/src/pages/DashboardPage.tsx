@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { applicationsApi } from '../api/client';
-import { Application, ApplicationStatus } from '../types';
+import { Link } from 'react-router-dom';
+import { applicationsApi, settingsApi } from '../api/client';
+import { AppSettings, Application, ApplicationStatus } from '../types';
 import { StatsBar } from '../components/StatsBar';
 import { ApplicationList } from '../components/ApplicationList';
 import { ApplicationForm } from '../components/ApplicationForm';
@@ -9,13 +10,19 @@ import { useAuth } from '../context/AuthContext';
 const EMPTY_COUNTS: Record<ApplicationStatus, number> = { applied: 0, interview: 0, offer: 0, rejected: 0 };
 
 export function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
   const [counts, setCounts] = useState(EMPTY_COUNTS);
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | undefined>(undefined);
   const [editing, setEditing] = useState<Application | 'new' | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<AppSettings | null>(null);
+
+  useEffect(() => {
+    // Announcement and limit are optional UI hints — the page still works if this fails.
+    settingsApi.getPublic().then(({ settings: loaded }) => setSettings(loaded)).catch(() => undefined);
+  }, []);
 
   const refresh = useCallback(async (status?: ApplicationStatus) => {
     setLoading(true);
@@ -58,17 +65,25 @@ export function DashboardPage() {
     <div className="dashboard">
       <header>
         <h1>KatTrack</h1>
-        <div>
+        <div className="header-actions">
+          {isAdmin && <Link to="/admin">Админ-панель</Link>}
           <span>{user?.email}</span>
           <button onClick={logout}>Выйти</button>
         </div>
       </header>
+
+      {settings?.announcement && <div className="announcement">{settings.announcement}</div>}
 
       <StatsBar counts={counts} activeStatus={statusFilter} onFilter={setStatusFilter} />
 
       <button className="add-button" onClick={() => setEditing('new')}>
         + Добавить отклик
       </button>
+      {settings && settings.maxApplicationsPerUser > 0 && (
+        <span className="limit-hint">
+          Использовано {Object.values(counts).reduce((sum, n) => sum + n, 0)} из {settings.maxApplicationsPerUser}
+        </span>
+      )}
 
       {error && <p className="error">{error}</p>}
       {loading ? (

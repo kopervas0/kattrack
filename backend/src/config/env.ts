@@ -15,4 +15,6 @@ export const env = {
   databaseUrl: required('DATABASE_URL', 'postgres://kattrack:kattrack@localhost:5432/kattrack'),
   jwtSecret: required('JWT_SECRET', 'dev-secret-change-me'),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+  adminEmail: process.env.ADMIN_EMAIL,
+  adminPassword: process.env.ADMIN_PASSWORD,
 };

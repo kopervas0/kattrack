@@ -30,6 +30,8 @@ services:
       DATABASE_URL: postgres://kattrack:kattrack@db:5432/kattrack
       JWT_SECRET: change-me-in-production
       JWT_EXPIRES_IN: 7d
+      ADMIN_EMAIL: admin@kattrack.local
+      ADMIN_PASSWORD: admin12345
     ports:
       - "4000:4000"
 

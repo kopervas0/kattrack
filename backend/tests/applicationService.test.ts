@@ -1,6 +1,19 @@
 import { ApplicationService, NotFoundError, ValidationError } from '../src/services/applicationService';
 import { ApplicationRepository } from '../src/repositories/applicationRepository';
+import { SettingsRepository } from '../src/repositories/settingsRepository';
+import { AppSettings } from '../src/types';
 import { Application } from '../src/types';
+
+function makeSettings(overrides: Partial<AppSettings> = {}): SettingsRepository {
+  return {
+    getAll: jest.fn().mockResolvedValue({
+      registrationEnabled: true,
+      maxApplicationsPerUser: 0,
+      announcement: '',
+      ...overrides,
+    }),
+  } as unknown as SettingsRepository;
+}
 
 // Unit tests hit the service layer with a mocked repository, so they
 // run in CI without needing a real PostgreSQL instance.
@@ -27,7 +40,7 @@ describe('ApplicationService', () => {
     const repo = {
       create: jest.fn().mockResolvedValue(makeApplication()),
     } as unknown as ApplicationRepository;
-    const service = new ApplicationService(repo);
+    const service = new ApplicationService(repo, makeSettings());
 
     const result = await service.create(1, { company: 'Профиторг', position: 'Junior Full Stack Developer' });
 
@@ -56,6 +69,27 @@ describe('ApplicationService', () => {
     const service = new ApplicationService(repo);
 
     await expect(service.update(99, 1, { status: 'offer' })).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it('rejects creation when the admin-defined limit is reached', async () => {
+    const repo = {
+      countByUser: jest.fn().mockResolvedValue(5),
+      create: jest.fn(),
+    } as unknown as ApplicationRepository;
+    const service = new ApplicationService(repo, makeSettings({ maxApplicationsPerUser: 5 }));
+
+    await expect(service.create(1, { company: 'A', position: 'B' })).rejects.toBeInstanceOf(ValidationError);
+    expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it('allows creation below the limit', async () => {
+    const repo = {
+      countByUser: jest.fn().mockResolvedValue(4),
+      create: jest.fn().mockResolvedValue(makeApplication()),
+    } as unknown as ApplicationRepository;
+    const service = new ApplicationService(repo, makeSettings({ maxApplicationsPerUser: 5 }));
+
+    await expect(service.create(1, { company: 'A', position: 'B' })).resolves.toBeDefined();
   });
 
   it('computes status counts via the repository', async () => {

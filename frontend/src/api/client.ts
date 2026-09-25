@@ -1,4 +1,12 @@
-import { Application, ApplicationStatus, PublicUser } from '../types';
+import {
+  AdminUserView,
+  AppSettings,
+  Application,
+  ApplicationStatus,
+  PublicUser,
+  SystemStats,
+  UserRole,
+} from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '/api';
 
@@ -58,6 +66,24 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
+  me: () => request<{ user: PublicUser }>('/auth/me'),
+};
+
+export const settingsApi = {
+  getPublic: () => request<{ settings: AppSettings }>('/settings/public'),
+};
+
+export const adminApi = {
+  listUsers: () => request<{ users: AdminUserView[] }>('/admin/users'),
+  setBlocked: (id: number, isBlocked: boolean) =>
+    request<void>(`/admin/users/${id}/block`, { method: 'PATCH', body: JSON.stringify({ isBlocked }) }),
+  setRole: (id: number, role: UserRole) =>
+    request<void>(`/admin/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
+  deleteUser: (id: number) => request<void>(`/admin/users/${id}`, { method: 'DELETE' }),
+  stats: () => request<SystemStats>('/admin/stats'),
+  getSettings: () => request<{ settings: AppSettings }>('/admin/settings'),
+  updateSettings: (patch: Partial<AppSettings>) =>
+    request<{ settings: AppSettings }>('/admin/settings', { method: 'PUT', body: JSON.stringify(patch) }),
 };
 
 export const applicationsApi = {
